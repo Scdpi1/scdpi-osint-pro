@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Planos - SCDPI OSINT PRO</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">SCDPI OSINT PRO</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">Início</a>
+                <a class="nav-link" href="/login">Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <h1 class="text-center mb-5">Escolha o plano ideal para sua investigação</h1>
+        
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-header bg-primary text-white text-center">
+                        <h3>Básico</h3>
+                    </div>
+                    <div class="card-body">
+                        <h2 class="card-title text-center">R$ 49,90<span class="text-muted">/mês</span></h2>
+                        <ul class="list-unstyled">
+                            <li>✅ 50 consultas/mês</li>
+                            <li>✅ Telefone + Email</li>
+                            <li>✅ CPF básico</li>
+                            <li>✅ Redes sociais</li>
+                            <li>❌ Vazamentos</li>
+                            <li>❌ API dedicada</li>
+                        </ul>
+                    </div>
+                    <div class="card-footer text-center">
+                        <a href="/stripe/criar-checkout/basico" class="btn btn-primary">Assinar</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-warning">
+                    <div class="card-header bg-warning text-dark text-center">
+                        <h3>Profissional</h3>
+                    </div>
+                    <div class="card-body">
+                        <h2 class="card-title text-center">R$ 99,90<span class="text-muted">/mês</span></h2>
+                        <ul class="list-unstyled">
+                            <li>✅ 200 consultas/mês</li>
+                            <li>✅ Tudo do Básico</li>
+                            <li>✅ CPF completo</li>
+                            <li>✅ CNPJ completo</li>
+                            <li>✅ Vazamentos (IntelX)</li>
+                            <li>❌ API dedicada</li>
+                        </ul>
+                    </div>
+                    <div class="card-footer text-center">
+                        <a href="/stripe/criar-checkout/profissional" class="btn btn-warning">Assinar</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-header bg-success text-white text-center">
+                        <h3>Enterprise</h3>
+                    </div>
+                    <div class="card-body">
+                        <h2 class="card-title text-center">R$ 299,90<span class="text-muted">/mês</span></h2>
+                        <ul class="list-unstyled">
+                            <li>✅ Consultas ilimitadas</li>
+                            <li>✅ Tudo do Profissional</li>
+                            <li>✅ API dedicada</li>
+                            <li>✅ Suporte prioritário</li>
+                            <li>✅ Log imutável completo</li>
+                            <li>✅ Dashboard para equipe</li>
+                        </ul>
+                    </div>
+                    <div class="card-footer text-center">
+                        <a href="/stripe/criar-checkout/enterprise" class="btn btn-success">Assinar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
