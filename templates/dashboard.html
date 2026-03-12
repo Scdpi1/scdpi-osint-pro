@@ -1,143 +1,519 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - SCDPI OSINT PRO</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .card-consultas {
-            background: linear-gradient(145deg, #1a2a3a, #0f1a24);
-            border: 2px solid #00ff9d;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
+        :root {
+            --bg-primary: #0a0f1e;
+            --bg-secondary: #151f2c;
+            --text-primary: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --accent: #00ff9d;
+            --accent-dark: #00cc7a;
+            --card-bg: rgba(20, 30, 40, 0.9);
+            --border-color: #2a3a4a;
         }
+        
+        [data-theme="light"] {
+            --bg-primary: #f0f4f8;
+            --bg-secondary: #ffffff;
+            --text-primary: #1a2a3a;
+            --text-secondary: #2a3a4a;
+            --accent: #0066cc;
+            --accent-dark: #004c99;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --border-color: #c0d0e0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Fundo animado com hexágonos */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(0, 255, 157, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(0, 255, 157, 0.05) 0%, transparent 50%),
+                repeating-linear-gradient(45deg, 
+                    rgba(0, 255, 157, 0.02) 0px, 
+                    rgba(0, 255, 157, 0.02) 2px,
+                    transparent 2px, 
+                    transparent 6px);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        /* Linhas de código no fundo */
+        .code-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(0, 255, 157, 0.02) 50%, 
+                transparent 100%);
+            pointer-events: none;
+            z-index: -1;
+            animation: scan 8s linear infinite;
+        }
+        
+        @keyframes scan {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Navbar personalizada */
+        .navbar-custom {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 15px 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar-brand {
+            font-size: 1.8em;
+            font-weight: bold;
+            background: linear-gradient(145deg, var(--accent), #00ffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(0, 255, 157, 0.5);
+        }
+        
+        .theme-toggle {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        .theme-toggle:hover {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+        }
+        
+        /* Cards de consulta */
+        .card-consulta {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card-consulta:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 255, 157, 0.15);
+            border-color: var(--accent);
+        }
+        
+        .consulta-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .consulta-numero {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: var(--accent);
+            text-shadow: 0 0 20px rgba(0, 255, 157, 0.3);
+        }
+        
+        .consulta-label {
+            font-size: 1.1em;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
         .badge-plano {
-            background: #00ff9d;
-            color: #0a0f0f;
-            padding: 8px 16px;
+            background: var(--accent);
+            color: #000;
+            padding: 8px 20px;
             border-radius: 30px;
             font-weight: bold;
+            font-size: 1.1em;
+            box-shadow: 0 4px 15px rgba(0, 255, 157, 0.3);
+        }
+        
+        .badge-plano::before {
+            content: '🔒 ';
+        }
+        
+        /* Formulário estilizado */
+        .form-control-custom {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 15px 20px;
+            border-radius: 15px;
+            font-size: 1.1em;
+            transition: all 0.3s;
+        }
+        
+        .form-control-custom:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0, 255, 157, 0.1);
+        }
+        
+        .btn-consulta {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn-consulta:hover {
+            background: var(--accent-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 255, 157, 0.3);
+        }
+        
+        .btn-consulta:active {
+            transform: translateY(0);
+        }
+        
+        /* Área de resultado */
+        .resultado-area {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+        
+        .resultado-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .resultado-header h4 {
+            color: var(--accent);
+            margin: 0;
+            font-weight: bold;
+        }
+        
+        .resultado-conteudo {
+            background: var(--bg-primary);
+            border-radius: 15px;
+            padding: 20px;
+            min-height: 200px;
+            font-family: 'Courier New', monospace;
+            font-size: 1em;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        /* Animações */
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        
+        .loading {
+            animation: pulse 1.5s infinite;
+            text-align: center;
+            padding: 30px;
+            color: var(--accent);
+        }
+        
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .consulta-info {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+            
+            .badge-plano {
+                width: 100%;
+                text-align: center;
+            }
+            
+            .navbar-brand {
+                font-size: 1.3em;
+            }
+        }
+        
+        /* Tooltip e micro-interações */
+        [data-tooltip] {
+            position: relative;
+            cursor: help;
+        }
+        
+        [data-tooltip]:before {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 5px 10px;
+            background: var(--accent);
+            color: #000;
+            border-radius: 5px;
+            font-size: 0.9em;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        
+        [data-tooltip]:hover:before {
+            opacity: 1;
         }
     </style>
 </head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="/">SCDPI OSINT PRO</a>
-            <div class="navbar-nav ms-auto">
-                <span class="nav-link text-white">Bem-vindo, {{ usuario.nome }}</span>
-                <a class="nav-link" href="/logout">Sair</a>
+<body data-theme="dark">
+    <div class="code-bg"></div>
+    
+    <div class="container">
+        <!-- Navbar com tema toggle -->
+        <nav class="navbar-custom d-flex justify-content-between align-items-center">
+            <div>
+                <span class="navbar-brand">SCDPI OSINT PRO</span>
+                <span class="badge-plano" data-tooltip="Seu plano atual">{{ usuario.plano|capitalize }}</span>
             </div>
-        </div>
-    </nav>
+            <div>
+                <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle">
+                    🌓 Alternar tema
+                </button>
+            </div>
+        </nav>
 
-    <div class="container mt-4">
         <!-- Cards de informação -->
-        <div class="row">
+        <div class="row g-4">
             <div class="col-md-4">
-                <div class="card-consultas">
-                    <h5>Consultas restantes</h5>
-                    <h2 class="display-4">{{ usuario.consultas_restantes }}</h2>
+                <div class="card-consulta">
+                    <div class="consulta-info">
+                        <span class="consulta-label">Consultas restantes</span>
+                        <span class="consulta-numero">{{ usuario.consultas_restantes }}</span>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-success" 
+                             role="progressbar" 
+                             style="width: {{ (usuario.consultas_restantes / (200 if usuario.plano == 'profissional' else 50)) * 100 }}%">
+                        </div>
+                    </div>
                 </div>
             </div>
+            
             <div class="col-md-4">
-                <div class="card-consultas">
-                    <h5>Plano atual</h5>
-                    <h2 class="display-4">{{ usuario.plano|capitalize }}</h2>
+                <div class="card-consulta">
+                    <div class="consulta-info">
+                        <span class="consulta-label">Plano</span>
+                        <span class="consulta-numero">{{ usuario.plano|capitalize }}</span>
+                    </div>
+                    <div class="text-secondary">
+                        <small>Válido até: {{ usuario.data_cadastro.strftime('%d/%m/%Y') if usuario.data_cadastro else 'Ilimitado' }}</small>
+                    </div>
                 </div>
             </div>
+            
             <div class="col-md-4">
-                <div class="card-consultas">
-                    <h5>Registro</h5>
-                    <h4>{{ usuario.registro_profissional }}</h4>
+                <div class="card-consulta">
+                    <div class="consulta-info">
+                        <span class="consulta-label">Registro</span>
+                        <span class="consulta-numero" style="font-size: 1.8em;">{{ usuario.registro_profissional }}</span>
+                    </div>
+                    <div class="text-secondary">
+                        <small>Detetive Profissional</small>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Formulário de consulta -->
-        <div class="row mt-4">
-            <div class="col-md-12">
-                <div class="card-consultas">
-                    <h4 class="mb-4">Nova consulta</h4>
-                    <form id="consultaForm">
-                        <div class="row">
-                            <div class="col-md-3">
-                                <select class="form-control form-control-lg" id="tipo" required>
-                                    <option value="">Selecione o tipo</option>
-                                    <option value="telefone">📱 Telefone</option>
-                                    <option value="cpf">🆔 CPF</option>
-                                    <option value="cnpj">🏢 CNPJ</option>
-                                    <option value="email">📧 E-mail</option>
-                                    <option value="geo_ip">📍 Geolocalização IP</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <input type="text" class="form-control form-control-lg" 
-                                       id="termo" placeholder="Digite o termo para consulta" required>
-                            </div>
-                            <div class="col-md-3">
-                                <button type="submit" class="btn btn-success btn-lg w-100">
-                                    🔍 Consultar
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+        <div class="card-consulta mt-4">
+            <h4 class="mb-4" style="color: var(--accent);">🔍 Nova consulta</h4>
+            <form id="consultaForm">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <select class="form-control-custom w-100" id="tipo" required>
+                            <option value="">Selecione o tipo</option>
+                            <option value="telefone">📱 Telefone</option>
+                            <option value="cpf">🆔 CPF</option>
+                            <option value="cnpj">🏢 CNPJ</option>
+                            <option value="email">📧 E-mail</option>
+                            <option value="geo_ip">📍 Geolocalização IP</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <input type="text" class="form-control-custom w-100" 
+                               id="termo" placeholder="Digite o termo para consulta" required>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn-consulta">
+                            🔍 Consultar
+                        </button>
+                    </div>
                 </div>
-            </div>
+            </form>
         </div>
 
         <!-- Área de resultado -->
-        <div class="row mt-4">
-            <div class="col-md-12">
-                <div class="card-consultas">
-                    <h4 class="mb-3">Resultado</h4>
-                    <pre id="resultado" class="bg-dark text-light p-4 rounded" style="min-height: 200px;"></pre>
-                </div>
+        <div class="card-consulta mt-4">
+            <div class="resultado-header">
+                <h4>📊 Resultado</h4>
+                <span class="badge-plano" style="font-size: 0.9em;">Live</span>
+            </div>
+            <div id="resultado" class="resultado-conteudo">
+                Aguardando consulta...
             </div>
         </div>
     </div>
 
     <script>
-    document.getElementById('consultaForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const tipo = document.getElementById('tipo').value;
-        const termo = document.getElementById('termo').value;
-        
-        // Mostra loading
-        document.getElementById('resultado').textContent = '🔄 Processando...';
-        
-        // Define a URL baseada no tipo
-        let url = '/api/consultar';
-        if (tipo === 'geo_ip') {
-            url = '/api/geo-ip';
+        // Função para alternar tema
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', newTheme);
+            
+            // Salva preferência
+            localStorage.setItem('theme', newTheme);
+            
+            // Atualiza botão
+            const btn = document.getElementById('themeToggle');
+            btn.innerHTML = newTheme === 'dark' ? '🌓 Alternar tema' : '🌗 Alternar tema';
         }
         
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    tipo: tipo,
-                    termo: termo,
-                    ip: termo  // para geo_ip
-                })
-            });
+        // Carrega tema salvo
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.body.setAttribute('data-theme', savedTheme);
+        
+        // Sistema de consulta
+        document.getElementById('consultaForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
             
-            const resultado = await response.json();
-            document.getElementById('resultado').textContent = JSON.stringify(resultado, null, 2);
+            const tipo = document.getElementById('tipo').value;
+            const termo = document.getElementById('termo').value;
+            const resultadoDiv = document.getElementById('resultado');
             
-            // Se a consulta foi bem sucedida, atualiza o contador
-            if (response.ok) {
-                // Recarrega a página para atualizar o contador (ou usa websocket depois)
-                setTimeout(() => location.reload(), 2000);
+            if (!tipo) {
+                resultadoDiv.innerHTML = '❌ Selecione um tipo de consulta';
+                return;
             }
-        } catch (error) {
-            document.getElementById('resultado').textContent = '❌ Erro na consulta: ' + error;
-        }
-    });
+            
+            if (!termo) {
+                resultadoDiv.innerHTML = '❌ Digite um termo para consulta';
+                return;
+            }
+            
+            // Mostra loading
+            resultadoDiv.innerHTML = '<div class="loading">🔍 Processando consulta...</div>';
+            
+            // Determina URL baseada no tipo
+            let url = '/api/consultar';
+            let body = { tipo: tipo, termo: termo };
+            
+            if (tipo === 'geo_ip') {
+                url = '/api/geo-ip';
+                body = { ip: termo };
+            }
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                
+                const data = await response.json();
+                
+                // Formata resultado com syntax highlighting (simples)
+                let formattedResult = JSON.stringify(data, null, 2)
+                    .replace(/("sucesso": true)/g, '<span style="color: #00ff9d; font-weight: bold;">$1</span>')
+                    .replace(/("sucesso": false)/g, '<span style="color: #ff4444; font-weight: bold;">$1</span>')
+                    .replace(/"([^"]+)":/g, '<span style="color: #88aaff;">"$1"</span>:');
+                
+                resultadoDiv.innerHTML = formattedResult;
+                
+                // Se a consulta foi bem sucedida, atualiza contador após 1 segundo
+                if (response.ok) {
+                    setTimeout(() => location.reload(), 2000);
+                }
+                
+            } catch (error) {
+                resultadoDiv.innerHTML = '❌ Erro na consulta: ' + error.message;
+            }
+        });
+        
+        // Auto-complete para IPs (exemplos)
+        const termoInput = document.getElementById('termo');
+        const ipExemplos = ['8.8.8.8', '1.1.1.1', '187.32.211.121', '177.92.3.145'];
+        let ipIndex = 0;
+        
+        termoInput.addEventListener('keydown', (e) => {
+            if (e.key === ' ' && e.ctrlKey) {
+                e.preventDefault();
+                termoInput.value = ipExemplos[ipIndex % ipExemplos.length];
+                ipIndex++;
+            }
+        });
+        
+        // Tooltip para mostrar atalho
+        const tooltip = document.createElement('small');
+        tooltip.className = 'text-secondary d-block mt-2';
+        tooltip.innerHTML = '💡 Dica: Pressione Ctrl+Espaço para ver IPs de exemplo';
+        termoInput.parentNode.appendChild(tooltip);
     </script>
 </body>
 </html>
