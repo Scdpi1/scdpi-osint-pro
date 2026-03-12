@@ -27,6 +27,12 @@ logger = logging.getLogger(__name__)
 # Carrega variáveis de ambiente
 load_dotenv()
 
+# Debug para verificar se as chaves estão carregando
+print(f"🔑 STRIPE_SECRET_KEY carregada: {os.getenv('STRIPE_SECRET_KEY', '❌ NÃO ENCONTRADA')[:20]}...")
+print(f"🔑 STRIPE_PUBLIC_KEY carregada: {os.getenv('STRIPE_PUBLIC_KEY', '❌ NÃO ENCONTRADA')[:20]}...")
+
+# Configura Stripe
+stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 # ==============================================
 # CONFIGURAÇÃO DO BANCO DE DADOS (CRÍTICO PARA O RENDER)
 # ==============================================
