@@ -1,3 +1,4 @@
+from flask_login import LoginManager
 from flask import Flask, render_template, jsonify, request
 from flask_login import login_required, current_user
 import os
@@ -18,6 +19,16 @@ app = Flask(__name__,
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+from flask_login import LoginManager
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'auth.login'  # Ajuste se sua rota de login for diferente
+
+@login_manager.user_loader
+def load_user(user_id):
+    from models import Usuario
+    return Usuario.query.get(int(user_id))
 
 # Inicializa banco de dados
 from models import db, Usuario, Consulta
@@ -73,3 +84,7 @@ with app.app_context():
 
 if __name__ == '__main__':
     app.run(debug=True)
+# Cria as tabelas do banco de dados se não existirem
+with app.app_context():
+    db.create_all()
+    print("✅ Banco de dados verificado/criado!")
