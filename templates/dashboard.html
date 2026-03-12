@@ -28,13 +28,7 @@
             --border-color: #c0d0e0;
         }
         
-        body
-             {% include 'background.html' %}
-             {% include 'navbar.html' %}
-             <div class="content-overlay">
-                 <!-- conteúdo do dashboard -->
-             </div>
-             {
+        body {
             font-family: 'Segoe UI', system-ui, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
@@ -141,6 +135,10 @@
             cursor: pointer;
         }
         
+        .btn-consulta:hover {
+            background: var(--accent-dark);
+        }
+        
         .resultado-conteudo {
             background: var(--bg-primary);
             border-radius: 10px;
@@ -227,8 +225,9 @@
         function toggleTheme() {
             const body = document.body;
             const currentTheme = body.getAttribute('data-theme');
-            body.setAttribute('data-theme', currentTheme === 'dark' ? 'light' : 'dark');
-            localStorage.setItem('theme', body.getAttribute('data-theme'));
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
         }
 
         const savedTheme = localStorage.getItem('theme') || 'dark';
@@ -266,7 +265,9 @@
                 const data = await response.json();
                 resultadoDiv.innerHTML = JSON.stringify(data, null, 2);
                 
-                if (response.ok) setTimeout(() => location.reload(), 2000);
+                if (response.ok) {
+                    setTimeout(() => location.reload(), 2000);
+                }
             } catch (error) {
                 resultadoDiv.innerHTML = '❌ Erro: ' + error.message;
             }
