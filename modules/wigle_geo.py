@@ -27,8 +27,8 @@ class WigleGeolocator:
         Inicializa o cliente com as credenciais da API.
         Se não fornecidas, tenta ler das variáveis de ambiente WIGLE_API_NAME e WIGLE_API_TOKEN.
         """
-        self.api_name = api_name or os.getenv('WIGLE_API_NAME')
-        self.api_token = api_token or os.getenv('WIGLE_API_TOKEN')
+        self.api_name = api_name or os.getenv('WIGLE_API_NAME', 'Scdpi')
+        self.api_token = api_token or os.getenv('WIGLE_API_TOKEN','R060287u#$%Ru!Bey')
         self.base_url = "https://api.wigle.net/api/v2"
         self.session = requests.Session()
 
