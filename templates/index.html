@@ -17,7 +17,11 @@
             --border-color: #2a3a4a;
         }
         
-        body {
+        body
+            {% include 'background.html' %}
+            {% include 'navbar.html' %}
+            <div class="content-overlay">
+            {
             font-family: 'Segoe UI', system-ui, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
@@ -422,5 +426,6 @@
             </p>
         </div>
     </footer>
+</div>
 </body>
 </html>

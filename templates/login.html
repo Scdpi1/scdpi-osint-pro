@@ -14,7 +14,13 @@
             --border-color: rgba(255, 215, 0, 0.3);
         }
         
-        body {
+        body
+            {% include 'background.html' %}
+            {% include 'navbar.html' %}
+            <div class="content-overlay">
+                <!-- conteúdo do login -->
+            </div>
+            {
             font-family: 'Segoe UI', system-ui, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);

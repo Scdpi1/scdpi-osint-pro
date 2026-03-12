@@ -28,7 +28,13 @@
             --border-color: #c0d0e0;
         }
         
-        body {
+        body
+             {% include 'background.html' %}
+             {% include 'navbar.html' %}
+             <div class="content-overlay">
+                 <!-- conteúdo do dashboard -->
+             </div>
+             {
             font-family: 'Segoe UI', system-ui, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
