@@ -12,7 +12,11 @@ import logging
 from flask import Flask, render_template, jsonify, request, redirect, url_for
 from flask_login import LoginManager, login_required, current_user
 from dotenv import load_dotenv
+from modules.ip_geolocation import IPGeolocator
 import stripe
+
+# Inicializa geolocalizador IP
+ip_geo = IPGeolocator()
 
 # Importações locais
 from models import db, Usuario
@@ -180,3 +184,33 @@ init_database()
 if __name__ == '__main__':
     logger.info("🚀 Iniciando servidor de desenvolvimento...")
     app.run(debug=True, host='0.0.0.0', port=5000)
+@app.route('/api/geo-ip', methods=['POST'])
+@login_required
+def geo_ip():
+    """Endpoint para geolocalização de IP"""
+    dados = request.get_json()
+    ip = dados.get('ip')
+    
+    if not ip:
+        return jsonify({'erro': 'IP não fornecido'}), 400
+    
+    # Verifica limite de consultas
+    if current_user.consultas_restantes <= 0:
+        return jsonify({'erro': 'Limite de consultas excedido'}), 403
+    
+    # Faz a consulta
+    resultado = ip_geo.localizar_ip(ip)
+    
+    if resultado['sucesso']:
+        # Decrementa consultas
+        current_user.consultas_restantes -= 1
+        db.session.commit()
+        
+        # Registra na blockchain
+        blockchain.registrar(
+            usuario_id=current_user.id,
+            acao='consulta_geo_ip',
+            dados={'ip': ip, 'resultado': resultado}
+        )
+    
+    return jsonify(resultado)
