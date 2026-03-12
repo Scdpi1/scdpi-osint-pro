@@ -17,10 +17,10 @@
             --border-color: #2a3a4a;
         }
         
-        body
-             {% include 'fundo_globo.html' %}
-             <div class="conteudo-sobre-fundo">
-             {
+        {% include 'fundo_globo.html' %}
+        <div class="conteudo-sobre-fundo">
+        <style>
+        body {
             font-family: 'Segoe UI', system-ui, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
@@ -28,8 +28,9 @@
             min-height: 100vh;
             position: relative;
             overflow-x: hidden;
-        }
-        
+       }
+       /* resto do CSS continua aqui */
+       </style>
         /* Fundo com globo e linhas douradas */
         .globe-bg {
             position: fixed;
