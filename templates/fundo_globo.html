@@ -22,7 +22,7 @@
     background-position: center;
     background-repeat: no-repeat;
     opacity: 0.3;
-    animation: pulsarGlobo 20s ease-in-out infinite;
+    animation: pulsar 20s ease-in-out infinite;
 }
 
 .fundo-globo::after {
@@ -36,16 +36,9 @@
     pointer-events: none;
 }
 
-@keyframes pulsarGlobo {
+@keyframes pulsar {
     0%, 100% { transform: scale(1); opacity: 0.3; }
     50% { transform: scale(1.05); opacity: 0.4; }
-}
-
-.conteudo-sobre-fundo {
-    position: relative;
-    z-index: 1;
-    min-height: 100vh;
-    backdrop-filter: blur(2px);
 }
 </style>
 

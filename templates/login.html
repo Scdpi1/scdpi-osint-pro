@@ -9,57 +9,23 @@
         :root {
             --bg-primary: #0a0f1e;
             --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
             --accent: #ffd700;
+            --accent-dark: #ccaa00;
             --card-bg: rgba(10, 15, 30, 0.8);
-            --border-color: rgba(255, 215, 0, 0.3);
+            --border-color: #2a3a4a;
         }
         
-        body
-            {% include 'fundo_globo.html' %}
-            <div class="conteudo-sobre-fundo">
-            {% include 'navbar.html' %}
-            <div class="content-overlay">
-                <!-- conteúdo do login -->
-            </div>
-            {
+        body {
             font-family: 'Segoe UI', system-ui, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
             margin: 0;
             min-height: 100vh;
-            position: relative;
-            overflow: hidden;
         }
         
-        /* Fundo com globo */
-        .globe-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            background: radial-gradient(circle at center, rgba(255, 215, 0, 0.1) 0%, transparent 70%),
-                        #0a0f1e;
-        }
-        
-        .globe-bg::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 100%;
-            height: 100%;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" opacity="0.2"><path fill="none" stroke="%23ffd700" stroke-width="0.8" d="M200,150 Q300,100 400,150 T600,130 T800,150"/><circle cx="400" cy="150" r="4" fill="%23ffd700"/><circle cx="600" cy="130" r="4" fill="%23ffd700"/><path fill="none" stroke="%23ffd700" stroke-width="0.6" d="M200,250 Q350,200 500,250 T750,230"/><circle cx="350" cy="200" r="3" fill="%23ffd700"/><circle cx="650" cy="230" r="3" fill="%23ffd700"/><path fill="none" stroke="%23ffd700" stroke-width="0.7" d="M150,350 Q300,300 450,350 T700,330"/><circle cx="300" cy="300" r="3.5" fill="%23ffd700"/><circle cx="550" cy="330" r="3.5" fill="%23ffd700"/></svg>');
-            background-repeat: no-repeat;
-            background-position: center;
-            background-size: cover;
-            pointer-events: none;
-        }
-        
-        .container {
-            height: 100vh;
+        .conteudo {
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -91,7 +57,7 @@
         
         .login-subtitle {
             text-align: center;
-            color: #b0b0b0;
+            color: var(--text-secondary);
             margin-bottom: 40px;
         }
         
@@ -126,7 +92,7 @@
         .btn-login {
             width: 100%;
             padding: 15px;
-            background: linear-gradient(145deg, var(--accent), #ccaa00);
+            background: linear-gradient(145deg, var(--accent), var(--accent-dark));
             color: #000;
             border: none;
             border-radius: 15px;
@@ -145,7 +111,7 @@
         .login-footer {
             text-align: center;
             margin-top: 30px;
-            color: #b0b0b0;
+            color: var(--text-secondary);
         }
         
         .login-footer a {
@@ -170,9 +136,8 @@
     </style>
 </head>
 <body>
-    <div class="globe-bg"></div>
-    
-    <div class="container">
+    {% include 'fundo_globo.html' %}
+    <div class="conteudo">
         <div class="login-card">
             <div class="login-title">
                 <span>SCDPI</span> OSINT PRO
@@ -206,6 +171,5 @@
             </div>
         </div>
     </div>
-</div>
 </body>
 </html>
