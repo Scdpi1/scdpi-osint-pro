@@ -117,7 +117,7 @@ def dashboard():
 @app.route('/api/consultar', methods=['POST'])
 @login_required
 def consultar():
-    """Endpoint para realizar consultas OSINT"""
+    """Endpoint para realizar consultas OSINT reais"""
     dados = request.get_json()
     tipo = dados.get('tipo')
     termo = dados.get('termo')
@@ -126,24 +126,34 @@ def consultar():
     if current_user.consultas_restantes <= 0:
         return jsonify({'erro': 'Limite de consultas excedido'}), 403
     
-    # Simulação de consulta (depois substituiremos por APIs reais)
-    resultado = {
-        'mensagem': f'Consulta simulada de {tipo}: {termo}',
-        'tipo': tipo,
-        'termo': termo,
-        'status': 'sucesso'
-    }
+    resultado = None
     
-    # Decrementa consultas
-    current_user.consultas_restantes -= 1
-    db.session.commit()
+    # Consulta real baseada no tipo
+    if tipo == 'geo_ip':
+        resultado = ip_geo.localizar_ip(termo)
+    elif tipo == 'telefone':
+        # Placeholder - implementaremos depois
+        resultado = {"sucesso": False, "mensagem": "Módulo de telefone em desenvolvimento"}
+    elif tipo == 'cpf':
+        resultado = {"sucesso": False, "mensagem": "Módulo de CPF em desenvolvimento"}
+    elif tipo == 'cnpj':
+        resultado = {"sucesso": False, "mensagem": "Módulo de CNPJ em desenvolvimento"}
+    elif tipo == 'email':
+        resultado = {"sucesso": False, "mensagem": "Módulo de email em desenvolvimento"}
+    else:
+        resultado = {"sucesso": False, "mensagem": "Tipo de consulta inválido"}
     
-    # Registra na blockchain forense
-    blockchain.registrar(
-        usuario_id=current_user.id,
-        acao=f'consulta_{tipo}',
-        dados={'termo': termo, 'resultado': resultado}
-    )
+    # Se a consulta foi bem sucedida, decrementa e registra
+    if resultado and resultado.get('sucesso'):
+        current_user.consultas_restantes -= 1
+        db.session.commit()
+        
+        # Registra na blockchain
+        blockchain.registrar(
+            usuario_id=current_user.id,
+            acao=f'consulta_{tipo}',
+            dados={'termo': termo, 'resultado': resultado}
+        )
     
     return jsonify(resultado)
 
