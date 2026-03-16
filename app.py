@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-SCDPI OSINT PRO - VERSÃO REAL COMPLETA
+SCDPI OSINT PRO - VERSÃO FINAL
 Autor: Iskender Chanazaroff | Registro: 1411-16-DF
 """
 
@@ -9,6 +9,7 @@ import os
 import logging
 import hashlib
 import json
+import re
 from datetime import datetime
 from flask import Flask, render_template, jsonify, request, redirect, url_for, flash
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
@@ -18,8 +19,6 @@ from dotenv import load_dotenv
 import stripe
 import requests
 import phonenumbers
-from phonenumbers import carrier, geocoder, timezone
-import re
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
@@ -43,13 +42,19 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'sua-chave-secreta-aqui-mude-
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///scdpi.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Rate Limiting (proteção contra abusos)
-limiter = Limiter(get_remote_address, app=app, default_limits=["200 por dia", "50 por hora"])
-
 # ==============================================
-# BANCO DE DADOS
+# INICIALIZAÇÃO DO SQLALCHEMY (DEPOIS DO APP)
 # ==============================================
 db = SQLAlchemy(app)
+
+# ==============================================
+# RATE LIMITING
+# ==============================================
+limiter = Limiter(get_remote_address, app=app, default_limits=["200 per day", "50 per hour"])
+
+# ==============================================
+# MODELOS DO BANCO DE DADOS
+# ==============================================
 
 class Usuario(UserMixin, db.Model):
     __tablename__ = 'usuarios'
@@ -75,7 +80,7 @@ class Consulta(db.Model):
     data_consulta = db.Column(db.DateTime, default=datetime.utcnow)
 
 # ==============================================
-# BLOCKCHAIN FORENSE (Log Imutável)
+# BLOCKCHAIN FORENSE
 # ==============================================
 class BlockchainForense:
     def __init__(self):
@@ -116,7 +121,7 @@ class ConsultasReais:
     """Classe que agrupa todas as consultas reais do sistema"""
     
     # -------------------------------------------------
-    # 1. GEOLOCALIZAÇÃO IP (ip-api.com) 
+    # 1. GEOLOCALIZAÇÃO IP
     # -------------------------------------------------
     def geo_ip(self, ip):
         """Retorna localização real de um IP"""
@@ -165,10 +170,10 @@ class ConsultasReais:
             return {"sucesso": False, "mensagem": f"Erro interno: {str(e)}"}
     
     # -------------------------------------------------
-    # 2. TELEFONE (Validação e informações via phonenumbers)
+    # 2. TELEFONE
     # -------------------------------------------------
     def telefone(self, numero):
-        """Valida número de telefone e retorna informações como DDD, operadora, região"""
+        """Valida número de telefone e retorna informações"""
         try:
             numero_limpo = re.sub(r'\D', '', numero)
             
@@ -235,24 +240,19 @@ class ConsultasReais:
             return {"sucesso": False, "mensagem": f"Erro na consulta: {str(e)}"}
     
     # -------------------------------------------------
-    # 3. E-MAIL (EmailRep.io + Análise de domínio)
+    # 3. E-MAIL
     # -------------------------------------------------
     def email(self, email):
-        """Verifica reputação de e-mail e vazamentos"""
+        """Verifica reputação de e-mail"""
         try:
             email = email.strip().lower()
             
             if not re.match(r'^[^@]+@[^@]+\.[^@]+$', email):
                 return {"sucesso": False, "mensagem": "Formato de e-mail inválido"}
             
-            # Tenta API do EmailRep.io
-            api_key = os.getenv('EMAILREP_API_KEY')
+            url = f"https://emailrep.io/{email}"
             headers = {'User-Agent': 'SCDPI-OSINT-PRO/1.0'}
             
-            if api_key:
-                headers['Authorization'] = f'Bearer {api_key}'
-            
-            url = f"https://emailrep.io/{email}"
             response = requests.get(url, headers=headers, timeout=10)
             
             if response.status_code == 200:
@@ -284,7 +284,6 @@ class ConsultasReais:
                 return resultado
                 
             elif response.status_code == 404:
-                # Fallback: análise básica do domínio
                 dominio = email.split('@')[1]
                 provedores_conhecidos = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 
                                         'uol.com.br', 'bol.com.br', 'ig.com.br', 'terra.com.br']
@@ -309,7 +308,7 @@ class ConsultasReais:
             return {"sucesso": False, "mensagem": f"Erro interno: {str(e)}"}
     
     # -------------------------------------------------
-    # 4. CPF (Validação matemática)
+    # 4. CPF
     # -------------------------------------------------
     def cpf(self, cpf):
         """Valida CPF usando algoritmo oficial"""
@@ -358,7 +357,7 @@ class ConsultasReais:
             return {"sucesso": False, "mensagem": f"Erro na validação: {str(e)}"}
     
     # -------------------------------------------------
-    # 5. CNPJ (Validação matemática)
+    # 5. CNPJ
     # -------------------------------------------------
     def cnpj(self, cnpj):
         """Valida CNPJ usando algoritmo oficial"""
@@ -488,7 +487,7 @@ def dashboard():
 
 @app.route('/api/consultar', methods=['POST'])
 @login_required
-@limiter.limit("10 por minuto")  # Proteção contra abusos
+@limiter.limit("10 per minute")
 def consultar():
     """Endpoint principal para consultas reais"""
     dados = request.get_json()
@@ -614,42 +613,15 @@ def sucesso_pagamento():
     return render_template('sucesso.html')
 
 # ==============================================
-# CRIAÇÃO DO BANCO DE DADOS
+# CRIAÇÃO AUTOMÁTICA DO BANCO DE DADOS
 # ==============================================
 def init_database():
     with app.app_context():
-        db.create_all()
-        logger.info("✅ Banco de dados verificado/criado")
-        
-        if not Usuario.query.filter_by(email='admin@scdpi.com').first():
-            admin = Usuario(
-                email='admin@scdpi.com',
-                senha_hash=generate_password_hash('admin123'),
-                nome='Administrador',
-                registro_profissional='ADMIN001',
-                plano='enterprise',
-                consultas_restantes=999999
-            )
-            db.session.add(admin)
-            db.session.commit()
-            logger.info("✅ Usuário admin criado (admin@scdpi.com / admin123)")
-
-# ==============================================
-# INÍCIO DO SERVIDOR
-# ==============================================
-# ==============================================
-# CRIAÇÃO AUTOMÁTICA DO BANCO (VERSÃO SIMPLIFICADA)
-# ==============================================
-def init_db_simplificado():
-    with app.app_context():
         try:
             db.create_all()
-            print("✅ Banco de dados verificado")
+            logger.info("✅ Banco de dados verificado/criado")
             
-            # Cria admin se não existir
-            from models import Usuario
-            from werkzeug.security import generate_password_hash
-            
+            # Cria usuário admin se não existir
             if not Usuario.query.filter_by(email='admin@scdpi.com').first():
                 admin = Usuario(
                     email='admin@scdpi.com',
@@ -661,12 +633,14 @@ def init_db_simplificado():
                 )
                 db.session.add(admin)
                 db.session.commit()
-                print("✅ Admin criado")
+                logger.info("✅ Usuário admin criado (admin@scdpi.com / admin123)")
         except Exception as e:
-            print(f"⚠️ Erro ao criar banco: {e}")
+            logger.error(f"❌ Erro ao criar banco: {e}")
 
-# Executa a criação do banco
-init_db_simplificado()
+init_database()
+
+# ==============================================
+# INÍCIO DO SERVIDOR
+# ==============================================
 if __name__ == '__main__':
-    init_database()
     app.run(debug=True, host='0.0.0.0', port=5000)
