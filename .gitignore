@@ -5,3 +5,6 @@ __pycache__/
 instance/
 *.db
 .env
+db_config.py
+init_db*.py
+*.bkp

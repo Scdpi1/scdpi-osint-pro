@@ -637,6 +637,36 @@ def init_database():
 # ==============================================
 # INÍCIO DO SERVIDOR
 # ==============================================
+# ==============================================
+# CRIAÇÃO AUTOMÁTICA DO BANCO (VERSÃO SIMPLIFICADA)
+# ==============================================
+def init_db_simplificado():
+    with app.app_context():
+        try:
+            db.create_all()
+            print("✅ Banco de dados verificado")
+            
+            # Cria admin se não existir
+            from models import Usuario
+            from werkzeug.security import generate_password_hash
+            
+            if not Usuario.query.filter_by(email='admin@scdpi.com').first():
+                admin = Usuario(
+                    email='admin@scdpi.com',
+                    senha_hash=generate_password_hash('admin123'),
+                    nome='Administrador',
+                    registro_profissional='ADMIN001',
+                    plano='enterprise',
+                    consultas_restantes=999999
+                )
+                db.session.add(admin)
+                db.session.commit()
+                print("✅ Admin criado")
+        except Exception as e:
+            print(f"⚠️ Erro ao criar banco: {e}")
+
+# Executa a criação do banco
+init_db_simplificado()
 if __name__ == '__main__':
     init_database()
     app.run(debug=True, host='0.0.0.0', port=5000)
