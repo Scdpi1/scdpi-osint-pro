@@ -43,7 +43,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///scd
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # ==============================================
-# INICIALIZAÇÃO DO SQLALCHEMY (DEPOIS DO APP)
+# INICIALIZAÇÃO DO SQLALCHEMY
 # ==============================================
 db = SQLAlchemy(app)
 
@@ -121,54 +121,75 @@ class ConsultasReais:
     """Classe que agrupa todas as consultas reais do sistema"""
     
     # -------------------------------------------------
-    # 1. GEOLOCALIZAÇÃO IP
+    # 1. GEOLOCALIZAÇÃO IP (COM VALIDAÇÃO DE IP PRIVADO)
     # -------------------------------------------------
     def geo_ip(self, ip):
-        """Retorna localização real de um IP"""
-        try:
-            if not ip or ip.strip() == '':
-                return {"sucesso": False, "mensagem": "IP não fornecido"}
+    """Retorna localização real de um IP - apenas IPs públicos"""
+    try:
+        if not ip or ip.strip() == '':
+            return {"sucesso": False, "mensagem": "IP não fornecido"}
+        
+        ip_limpo = ip.strip()
+        
+        # Lista de IPs privados
+        ip_privado_prefixos = (
+            '192.168.', '10.', '172.16.', '172.17.', '172.18.', '172.19.',
+            '172.20.', '172.21.', '172.22.', '172.23.', '172.24.', '172.25.',
+            '172.26.', '172.27.', '172.28.', '172.29.', '172.30.', '172.31.',
+            '127.', '169.254.'
+        )
+        
+        if ip_limpo.startswith(ip_privado_prefixos):
+            return {
+                "sucesso": False,
+                "mensagem": "IP privado ou local. Use apenas IPs públicos (ex: 8.8.8.8).",
+                "ip": ip_limpo,
+                "tipo": "privado"
+            }
+        
+        # Tenta consultar na API
+        url = f"http://ip-api.com/json/{ip_limpo}?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,query"
+        
+        response = requests.get(url, timeout=5)
+        
+        if response.status_code == 200:
+            dados = response.json()
             
-            url = f"http://ip-api.com/json/{ip.strip()}?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,query"
-            
-            response = requests.get(url, timeout=10)
-            
-            if response.status_code == 200:
-                dados = response.json()
-                
-                if dados.get('status') == 'success':
-                    return {
-                        "sucesso": True,
-                        "ip": dados.get('query'),
-                        "pais": dados.get('country'),
-                        "codigo_pais": dados.get('countryCode'),
-                        "regiao": dados.get('regionName'),
-                        "cidade": dados.get('city'),
-                        "cep": dados.get('zip'),
-                        "latitude": dados.get('lat'),
-                        "longitude": dados.get('lon'),
-                        "fuso_horario": dados.get('timezone'),
-                        "isp": dados.get('isp'),
-                        "organizacao": dados.get('org'),
-                        "asn": dados.get('as'),
-                        "fonte": "ip-api.com"
-                    }
-                else:
-                    return {
-                        "sucesso": False,
-                        "mensagem": dados.get('message', 'Erro na consulta'),
-                        "ip": ip
-                    }
+            if dados.get('status') == 'success':
+                return {
+                    "sucesso": True,
+                    "ip": dados.get('query'),
+                    "pais": dados.get('country'),
+                    "codigo_pais": dados.get('countryCode'),
+                    "regiao": dados.get('regionName'),
+                    "cidade": dados.get('city'),
+                    "cep": dados.get('zip'),
+                    "latitude": dados.get('lat'),
+                    "longitude": dados.get('lon'),
+                    "fuso_horario": dados.get('timezone'),
+                    "isp": dados.get('isp'),
+                    "organizacao": dados.get('org'),
+                    "asn": dados.get('as'),
+                    "fonte": "ip-api.com"
+                }
             else:
-                return {"sucesso": False, "mensagem": f"Erro HTTP {response.status_code}"}
-                
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Erro na consulta de IP: {e}")
-            return {"sucesso": False, "mensagem": f"Erro de conexão: {str(e)}"}
-        except Exception as e:
-            logger.error(f"Erro inesperado: {e}")
-            return {"sucesso": False, "mensagem": f"Erro interno: {str(e)}"}
-    
+                return {
+                    "sucesso": False,
+                    "mensagem": dados.get('message', 'Erro na consulta'),
+                    "ip": ip_limpo
+                }
+        else:
+            return {"sucesso": False, "mensagem": f"Erro HTTP {response.status_code} na API externa"}
+            
+    except requests.exceptions.Timeout:
+        logger.error(f"Timeout na consulta de IP: {ip}")
+        return {"sucesso": False, "mensagem": "Tempo limite excedido. Tente novamente."}
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Erro de conexão na consulta de IP: {e}")
+        return {"sucesso": False, "mensagem": "Erro de conexão com a API externa"}
+    except Exception as e:
+        logger.error(f"Erro inesperado na consulta de IP: {e}")
+        return {"sucesso": False, "mensagem": f"Erro interno: {str(e)}"}
     # -------------------------------------------------
     # 2. TELEFONE
     # -------------------------------------------------
