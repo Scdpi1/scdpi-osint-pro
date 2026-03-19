@@ -8,3 +8,8 @@ instance/
 db_config.py
 init_db*.py
 *.bkp
+*.bkp
+*.bkp.*
+python
+test_*.py
+requeriments.txt
