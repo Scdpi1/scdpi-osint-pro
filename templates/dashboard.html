@@ -1,42 +1,147 @@
-<script>
-document.getElementById('consultaForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const tipo = document.getElementById('tipo').value;
-    const termo = document.getElementById('termo').value;
-    const resultadoDiv = document.getElementById('resultado');
-    
-    if (!tipo || !termo) {
-        resultadoDiv.innerHTML = '❌ Preencha todos os campos';
-        return;
-    }
-    
-    resultadoDiv.innerHTML = '🔍 Processando...';
-    
-    try {
-        const response = await fetch('/api/consultar', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({tipo, termo})
-        });
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - SCDPI OSINT PRO</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #0a0f1e;
+            color: #fff;
+            font-family: monospace;
+            padding: 20px;
+        }
+        .card {
+            background: #1a1f2e;
+            border: 1px solid #6B8E23;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .numero {
+            font-size: 3em;
+            color: #6B8E23;
+            font-weight: bold;
+        }
+        .label {
+            color: #888;
+            text-transform: uppercase;
+        }
+        select, input {
+            background: #2a2f3e;
+            color: #fff;
+            border: 1px solid #6B8E23;
+            padding: 10px;
+            border-radius: 8px;
+            width: 100%;
+        }
+        button {
+            background: #6B8E23;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            width: 100%;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .resultado {
+            background: #1a1f2e;
+            border: 1px solid #6B8E23;
+            border-radius: 10px;
+            padding: 20px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            margin-top: 20px;
+        }
+        a { color: #6B8E23; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="color: #6B8E23;">SCDPI OSINT PRO</h1>
         
-        const data = await response.json();
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="label">Consultas restantes</div>
+                    <div class="numero">{{ usuario.consultas_restantes }}</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="label">Plano</div>
+                    <div class="numero">{{ usuario.plano|capitalize }}</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="label">Registro</div>
+                    <div class="numero">{{ usuario.registro_profissional }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Nova consulta</h3>
+            <div class="row">
+                <div class="col-md-3">
+                    <select id="tipo" class="form-control">
+                        <option value="geo_ip">📍 Geolocalização IP</option>
+                        <option value="telefone">📱 Telefone</option>
+                        <option value="email">📧 E-mail</option>
+                        <option value="cpf">🆔 CPF</option>
+                        <option value="cnpj">🏢 CNPJ</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <input type="text" id="termo" placeholder="Digite o termo" class="form-control">
+                </div>
+                <div class="col-md-3">
+                    <button onclick="consultar()">Consultar</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="resultado" id="resultado">
+            Aguardando consulta...
+        </div>
+    </div>
+
+    <script>
+    async function consultar() {
+        const tipo = document.getElementById('tipo').value;
+        const termo = document.getElementById('termo').value;
+        const resultadoDiv = document.getElementById('resultado');
         
-        // Mostra o resultado BONITINHO
-        resultadoDiv.innerHTML = JSON.stringify(data, null, 2);
-        
-        // Atualiza o contador SEM recarregar
-        if (data.consultas_restantes !== undefined) {
-            const contador = document.querySelector('.consulta-numero');
-            if (contador) {
-                contador.innerHTML = data.consultas_restantes;
-            }
+        if (!termo) {
+            resultadoDiv.innerHTML = '❌ Digite um termo';
+            return;
         }
         
-        // NADA DE location.reload() AQUI!
+        resultadoDiv.innerHTML = '🔍 Processando...';
         
-    } catch (error) {
-        resultadoDiv.innerHTML = '❌ Erro: ' + error;
+        try {
+            const response = await fetch('/api/consultar', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({tipo, termo})
+            });
+            
+            const data = await response.json();
+            resultadoDiv.innerHTML = JSON.stringify(data, null, 2);
+            
+            // Atualiza contador se tiver
+            if (data.consultas_restantes !== undefined) {
+                const contador = document.querySelector('.numero');
+                if (contador) contador.innerHTML = data.consultas_restantes;
+            }
+        } catch (error) {
+            resultadoDiv.innerHTML = '❌ Erro: ' + error;
+        }
     }
-});
-</script>
+    </script>
+</body>
+</html>
