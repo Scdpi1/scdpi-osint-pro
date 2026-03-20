@@ -22,16 +22,18 @@ document.getElementById('consultaForm').addEventListener('submit', async (e) => 
         
         const data = await response.json();
         
-        // Mostra o resultado
+        // Mostra o resultado BONITINHO
         resultadoDiv.innerHTML = JSON.stringify(data, null, 2);
         
-        // Atualiza o contador SEM recarregar a página
-        if (response.ok && data.consultas_restantes !== undefined) {
+        // Atualiza o contador SEM recarregar
+        if (data.consultas_restantes !== undefined) {
             const contador = document.querySelector('.consulta-numero');
             if (contador) {
                 contador.innerHTML = data.consultas_restantes;
             }
         }
+        
+        // NADA DE location.reload() AQUI!
         
     } catch (error) {
         resultadoDiv.innerHTML = '❌ Erro: ' + error;
